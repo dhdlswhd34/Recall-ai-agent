@@ -199,6 +199,7 @@ async def get_meeting(
         summary=row["summary"],
         topics=row["topics"],
         error_message=row["error_message"],
+        docs_url=row["docs_url"],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
         action_items=[

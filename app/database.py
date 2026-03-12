@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS meetings (
     summary       TEXT,
     topics        TEXT,
     error_message TEXT,
+    docs_url      TEXT,
     created_at    DATETIME DEFAULT (datetime('now')),
     updated_at    DATETIME DEFAULT (datetime('now'))
 );
@@ -67,6 +68,14 @@ async def init_db() -> None:
 
     async with aiosqlite.connect(settings.db_path) as db:
         await db.executescript(SCHEMA_SQL)
+
+        # Migrate: add docs_url column if missing (existing DBs)
+        try:
+            await db.execute("ALTER TABLE meetings ADD COLUMN docs_url TEXT")
+            await db.commit()
+            logger.info("Migrated: added docs_url column")
+        except Exception:
+            pass  # Column already exists
 
         # Try loading sqlite-vec extension
         try:

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,6 +12,10 @@ class Settings(BaseSettings):
     db_path: str = "/data/db/meetings.db"
     max_upload_size_mb: int = 25
     log_level: str = "INFO"
+
+    # Google Workspace (gws) integration
+    gws_enabled: bool = False
+    gws_folder_id: Optional[str] = None  # Google Drive folder ID to save docs into
 
 
 settings = Settings()

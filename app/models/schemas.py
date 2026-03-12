@@ -52,6 +52,7 @@ class MeetingOut(BaseModel):
     summary: Optional[str] = None
     topics: List[str] = Field(default_factory=list)
     error_message: Optional[str] = None
+    docs_url: Optional[str] = None
     created_at: str
     updated_at: str
     action_items: List[ActionItemOut] = Field(default_factory=list)

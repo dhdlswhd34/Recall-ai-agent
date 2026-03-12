@@ -4,6 +4,7 @@ from typing import Literal
 from langgraph.graph import END, StateGraph
 
 from app.workflow.nodes.embed import embed_node
+from app.workflow.nodes.export_docs import export_docs_node
 from app.workflow.nodes.extract import extract_node
 from app.workflow.nodes.persist import persist_node
 from app.workflow.nodes.summarize import summarize_node
@@ -48,6 +49,7 @@ def build_graph() -> StateGraph:
     builder.add_node("extract", extract_node)
     builder.add_node("embed", embed_node)
     builder.add_node("persist", persist_node)
+    builder.add_node("export_docs", export_docs_node)
 
     builder.set_entry_point("validate")
 
@@ -57,7 +59,8 @@ def build_graph() -> StateGraph:
     builder.add_conditional_edges("extract", route_after_extract)
 
     builder.add_edge("embed", "persist")
-    builder.add_edge("persist", END)
+    builder.add_edge("persist", "export_docs")
+    builder.add_edge("export_docs", END)
 
     return builder.compile()
 
@@ -90,6 +93,8 @@ async def run_meeting_workflow(
         "embed_error": None,
         "final_status": "done",
         "error_message": None,
+        "docs_url": None,
+        "docs_error": None,
     }
 
     try:

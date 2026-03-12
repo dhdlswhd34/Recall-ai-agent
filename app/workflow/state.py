@@ -41,3 +41,7 @@ class MeetingState(TypedDict):
     # Final
     final_status: str  # done | failed
     error_message: Optional[str]
+
+    # Google Docs export
+    docs_url: Optional[str]
+    docs_error: Optional[str]
