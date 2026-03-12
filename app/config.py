@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     db_path: str = "/data/db/meetings.db"
     max_upload_size_mb: int = 25
     log_level: str = "INFO"
+
+    # CORS — empty list means no origins allowed (deny all by default)
+    cors_origins: List[str] = []
 
     # Google Workspace (gws) integration
     gws_enabled: bool = False

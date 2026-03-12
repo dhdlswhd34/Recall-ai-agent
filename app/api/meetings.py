@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import uuid
 from typing import List, Optional
 
@@ -33,10 +34,16 @@ ALLOWED_CONTENT_TYPES = {
     "application/octet-stream",
 }
 
+ALLOWED_EXTENSIONS = {"wav", "mp3", "m4a", "mp4", "webm", "ogg", "flac"}
+
 
 def _ext_from_filename(filename: str) -> str:
     parts = filename.rsplit(".", 1)
-    return parts[-1].lower() if len(parts) == 2 else ""
+    if len(parts) != 2:
+        return ""
+    # Strip all non-alphanumeric characters to prevent path traversal
+    ext = re.sub(r"[^a-z0-9]", "", parts[-1].lower())[:10]
+    return ext if ext in ALLOWED_EXTENSIONS else ""
 
 
 @router.post("", status_code=status.HTTP_202_ACCEPTED, response_model=MeetingCreateResponse)
@@ -49,12 +56,15 @@ async def create_meeting(
 ):
     """Upload an audio file and start async processing."""
     # Parse participants
+    if participants and len(participants) > 10_000:
+        raise HTTPException(status_code=422, detail="participants field too large")
     try:
         participants_list = json.loads(participants) if participants else []
         if not isinstance(participants_list, list):
             participants_list = []
     except Exception:
         participants_list = []
+    participants_list = participants_list[:50]  # cap at 50 entries
 
     # Determine extension
     filename = audio.filename or "audio"
@@ -62,20 +72,31 @@ async def create_meeting(
     if not ext:
         ext = "wav"
 
-    # Save file
-    meeting_id = str(uuid.uuid4())
-    os.makedirs(settings.upload_dir, exist_ok=True)
-    audio_path = os.path.join(settings.upload_dir, f"{meeting_id}.{ext}")
+    # Pre-check Content-Length to avoid reading oversized files into memory
+    max_bytes = settings.max_upload_size_mb * 1024 * 1024
+    content_length = audio.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > max_bytes:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"File too large. Max allowed: {settings.max_upload_size_mb}MB",
+                )
+        except ValueError:
+            pass  # malformed header — let actual read decide
 
     content = await audio.read()
 
-    # Size check (pre-save)
-    max_bytes = settings.max_upload_size_mb * 1024 * 1024
+    # Actual size check (header may be absent or forged)
     if len(content) > max_bytes:
         raise HTTPException(
             status_code=413,
-            detail=f"File too large: {len(content) / 1024 / 1024:.1f}MB. Max allowed: {settings.max_upload_size_mb}MB",
+            detail=f"File too large. Max allowed: {settings.max_upload_size_mb}MB",
         )
+
+    meeting_id = str(uuid.uuid4())
+    os.makedirs(settings.upload_dir, exist_ok=True)
+    audio_path = os.path.join(settings.upload_dir, f"{meeting_id}.{ext}")
 
     with open(audio_path, "wb") as f:
         f.write(content)

@@ -16,7 +16,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
 
-RUN mkdir -p /data/uploads /data/db
+RUN mkdir -p /data/uploads /data/db \
+    && useradd -m -u 1000 appuser \
+    && chown -R appuser:appuser /data /app
+
+USER appuser
 
 EXPOSE 8000
 

@@ -15,18 +15,20 @@ def validate_node(state: MeetingState) -> dict:
     audio_format = state.get("audio_format", "")
 
     if not os.path.exists(audio_path):
+        logger.error(f"Audio file not found: {audio_path}")
         return {
             "validated": False,
-            "validation_error": f"Audio file not found: {audio_path}",
+            "validation_error": "Audio file not found",
             "final_status": "failed",
-            "error_message": f"Audio file not found: {audio_path}",
+            "error_message": "Audio file not found",
         }
 
     ext = audio_format.lower().lstrip(".")
     if ext not in ALLOWED_EXTENSIONS:
+        logger.error(f"Unsupported format '{ext}' for meeting {state['meeting_id']}")
         return {
             "validated": False,
-            "validation_error": f"Unsupported format '{ext}'. Allowed: {', '.join(ALLOWED_EXTENSIONS)}",
+            "validation_error": f"Unsupported format. Allowed: {', '.join(sorted(ALLOWED_EXTENSIONS))}",
             "final_status": "failed",
             "error_message": f"Unsupported audio format: {ext}",
         }

@@ -33,3 +33,7 @@ Thumbs.db
 
 # Docker volumes
 meeting_data/
+
+# Internal project management docs (local only)
+CODE_STYLE.md
+PROGRESS.md

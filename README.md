@@ -176,8 +176,9 @@ Environment variables (via `.env`):
 | `OPENAI_API_KEY` | — | Required. OpenAI API key |
 | `DB_PATH` | `/data/db/meetings.db` | SQLite database path |
 | `UPLOAD_DIR` | `/data/uploads` | Audio file storage |
-| `MAX_UPLOAD_SIZE_MB` | `100` | Max upload size in MB |
+| `MAX_UPLOAD_SIZE_MB` | `25` | Max upload size in MB |
 | `LOG_LEVEL` | `INFO` | Logging level |
+| `CORS_ORIGINS` | `[]` | Allowed CORS origins (e.g. `["https://yourapp.com"]`). Empty = deny all |
 
 ## Project Structure
 
@@ -206,6 +207,11 @@ Environment variables (via `.env`):
 ├── docker-compose.yml
 └── requirements.txt
 ```
+
+## Development
+
+- [`CODE_STYLE.md`](./CODE_STYLE.md) — 코드 스타일 및 규칙 (새 코드 작성 전 참조)
+- [`PROGRESS.md`](./PROGRESS.md) — 기능 개발 진행 상황 체크리스트
 
 ## License
 
